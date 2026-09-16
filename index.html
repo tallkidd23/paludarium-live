@@ -74,15 +74,14 @@
       cursor: pointer;
     }
 
-    /* Video positioned flush against the top of the CRT screen */
+    /* Video positioned right at the top border of the CRT bulb */
     .crt-video-feed {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: top center; /* Moves the uncropped video flush to the top bezel edge */
+      height: 82%; /* Tight top placement leaving clean bottom title strip */
+      object-fit: fill; /* Extends from left edge to right edge flush against top */
       opacity: 0;
       transition: opacity 1.8s ease;
       filter: contrast(1.06) saturate(1.12) brightness(1.0);
@@ -147,12 +146,14 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 10px 14px 8px 14px;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+      height: 18%;
+      padding: 0 14px;
+      background: #020604;
+      border-top: 1px solid rgba(57, 255, 20, 0.15);
       z-index: 6;
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
+      align-items: center;
       pointer-events: none;
     }
 
@@ -213,7 +214,7 @@
 
     @media (max-width: 600px) {
       .bottom-screen-titlebar {
-        padding: 6px 8px;
+        padding: 0 8px;
       }
       .title-main {
         font-size: 10px;
@@ -244,14 +245,7 @@
         <div class="crt-scanline-grid" id="scanlines"></div>
         <div class="crt-glass-glare"></div>
 
-        <div class="bottom-screen-titlebar">
-          <div>
-            <div class="title-main">PALUDARIUM</div>
-            <div class="title-sub">EPHEMERAL TRANSMISSION • 1080p</div>
-          </div>
-          <div class="audio-badge" id="audioBadge">MUTED</div>
-        </div>
-
+        <!-- Video Player pushed firmly to the top -->
         <video 
           id="paludariumVideo" 
           class="crt-video-feed" 
@@ -262,6 +256,15 @@
           <source src="paludarium_stream.mp4" type="video/mp4">
           Your browser does not support vintage CRT video playback.
         </video>
+
+        <!-- Bottom Title Strip with green phosphor text -->
+        <div class="bottom-screen-titlebar">
+          <div>
+            <div class="title-main">PALUDARIUM</div>
+            <div class="title-sub">EPHEMERAL TRANSMISSION • 1080p</div>
+          </div>
+          <div class="audio-badge" id="audioBadge">MUTED</div>
+        </div>
 
       </div>
 
