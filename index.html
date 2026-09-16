@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paludarium Signal // CRT Monitor</title>
+  <title>Paludarium Signal // Live Feed</title>
   <style>
     :root {
-      --bg-room: #0a0c0e;
+      --phosphor-green: #39ff14;
+      --phosphor-glow: rgba(57, 255, 20, 0.75);
+      --phosphor-dim: #1e870e;
+      --screen-dark: #030805;
     }
 
     * {
@@ -17,59 +20,28 @@
     }
 
     body {
-      background-color: var(--bg-room);
+      background-color: #000;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       font-family: 'Courier New', Courier, monospace;
-      color: #8c9e8c;
-      overflow-x: hidden;
-      margin: 0;
-      padding: 10px;
-    }
-
-    .desk-stage {
-      position: relative;
-      width: 100%;
-      max-width: 1100px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .monitor-frame {
-      position: relative;
-      width: 100%;
-      line-height: 0;
-    }
-
-    .monitor-bg-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 6px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
-    }
-
-    .screen-glass-anchor {
-      position: absolute;
-      top: 16.8%;
-      left: 24.8%;
-      width: 50.8%;
-      height: 52.6%;
-      border-radius: 8.5% 8.5% 10% 10% / 10% 10% 12% 12%;
       overflow: hidden;
-      background: #020604;
-      line-height: normal;
-      box-shadow: 
-        inset 0 0 45px rgba(0, 0, 0, 0.98),
-        inset 0 0 90px rgba(5, 30, 20, 0.7);
-      transform: translateZ(0);
     }
 
-    .crt-video-feed {
+    .fullscreen-stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: var(--screen-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .full-video-layer {
       position: absolute;
       top: 0;
       left: 0;
@@ -78,10 +50,10 @@
       object-fit: cover;
       opacity: 0;
       transition: opacity 1.8s ease;
-      filter: contrast(1.05) saturate(1.1) brightness(1.0);
-      transform: scale(1.03);
+      filter: contrast(1.06) saturate(1.12) brightness(0.98);
+      z-index: 1;
     }
-    .crt-video-feed.active {
+    .full-video-layer.active {
       opacity: 1;
     }
 
@@ -91,15 +63,14 @@
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 3;
+      z-index: 2;
       pointer-events: none;
-      opacity: 0.92;
+      opacity: 0.95;
       mix-blend-mode: screen;
-      transition: opacity 0.9s ease;
+      transition: opacity 1s ease;
     }
 
-    /* Scanlines that flicker and smoothly fade out to a crisp picture */
-    .crt-scanline-grid {
+    .scanlines-overlay {
       position: absolute;
       top: 0;
       left: 0;
@@ -112,46 +83,45 @@
         rgba(0, 0, 0, 0.45) 51%,
         rgba(0, 0, 0, 0.45)
       );
-      background-size: 100% 3px;
+      background-size: 100% 4px;
       pointer-events: none;
-      z-index: 4;
+      z-index: 3;
       opacity: 0.85;
       transition: opacity 2.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .crt-scanline-grid.fade-out {
+    .scanlines-overlay.fade-out {
       opacity: 0;
     }
 
-    .crt-glass-glare {
+    .glass-vignette {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       background: 
-        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 25%, transparent 55%),
-        radial-gradient(circle at 82% 80%, rgba(180, 220, 200, 0.1) 0%, transparent 42%),
-        radial-gradient(circle at 50% 50%, transparent 65%, rgba(0, 0, 0, 0.8) 100%);
+        radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.85) 100%);
+      box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.9);
       pointer-events: none;
-      z-index: 5;
+      z-index: 4;
     }
 
-    .crt-hud-display {
+    .top-signal-hud {
       position: absolute;
-      top: 18px;
-      left: 22px;
-      z-index: 6;
+      top: 24px;
+      left: 28px;
+      z-index: 10;
       font-size: 13px;
       font-weight: bold;
-      color: #39ff14;
-      text-shadow: 0 0 6px #39ff14, 0 0 12px rgba(57, 255, 20, 0.8);
+      color: var(--phosphor-green);
+      text-shadow: 0 0 6px var(--phosphor-glow), 0 0 14px rgba(57, 255, 20, 0.6);
       letter-spacing: 2px;
       pointer-events: none;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
-    .live-dot {
+    .live-indicator {
       display: inline-block;
       width: 8px;
       height: 8px;
@@ -167,76 +137,156 @@
       50% { opacity: 0.3; }
     }
 
-    .knob-hotspot {
+    .bottom-phosphor-bar {
       position: absolute;
-      bottom: 23%;
-      width: 4.8%;
-      height: 5.8%;
-      border-radius: 50%;
-      cursor: pointer;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 32px 36px 28px 36px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.65) 60%, transparent 100%);
       z-index: 10;
-      background: rgba(255, 255, 255, 0.001);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: flex-end;
+      pointer-events: none;
     }
-    .knob-left-hotspot { left: 25.5%; }
-    .knob-right-hotspot { right: 23.5%; }
 
-    .broadcast-info {
-      margin-top: 16px;
+    .title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .main-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--phosphor-green);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      text-shadow: 
+        0 0 8px var(--phosphor-glow),
+        0 0 20px rgba(57, 255, 20, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sub-telemetry {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: #79bf77;
+      text-shadow: 0 0 4px rgba(57, 255, 20, 0.4);
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .telemetry-item span {
+      color: var(--phosphor-green);
+      font-weight: bold;
+    }
+
+    .interactive-badges {
+      display: flex;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .hud-btn {
+      background: rgba(8, 26, 12, 0.7);
+      border: 1px solid var(--phosphor-dim);
+      color: var(--phosphor-green);
+      font-family: inherit;
       font-size: 11px;
+      font-weight: bold;
       letter-spacing: 1.5px;
-      color: #5c7468;
-      text-align: center;
-      line-height: 1.5;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-shadow: 0 0 4px var(--phosphor-glow);
+      transition: all 0.2s ease;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+    }
+    .hud-btn:hover {
+      background: rgba(18, 56, 26, 0.9);
+      border-color: var(--phosphor-green);
+      box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
     }
 
-    .broadcast-info span {
-      color: #8fa89b;
+    @keyframes phosphorFlicker {
+      0% { opacity: 0.97; }
+      50% { opacity: 1; }
+      52% { opacity: 0.92; }
+      54% { opacity: 1; }
+      80% { opacity: 0.98; }
+      100% { opacity: 1; }
+    }
+    .main-title, .top-signal-hud {
+      animation: phosphorFlicker 0.15s infinite;
+    }
+
+    @media (max-width: 768px) {
+      .bottom-phosphor-bar {
+        grid-template-columns: 1fr;
+        padding: 20px 18px;
+        gap: 14px;
+      }
+      .main-title {
+        font-size: 19px;
+        letter-spacing: 2.5px;
+      }
+      .sub-telemetry {
+        font-size: 10px;
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="desk-stage">
+  <div class="fullscreen-stage" id="stage">
     
-    <div class="monitor-frame">
-      <img 
-        src="IMG_6708.jpeg" 
-        alt="Vintage IBM CRT Monitor" 
-        class="monitor-bg-image"
-      />
+    <video 
+      id="paludariumVideo" 
+      class="full-video-layer" 
+      playsinline 
+      loop 
+      muted 
+      preload="auto">
+      <source src="paludarium_stream.mp4" type="video/mp4">
+      Your browser does not support vintage signal playback.
+    </video>
 
-      <div class="knob-hotspot knob-left-hotspot" id="tuneBtn" title="Click to Tune / Re-sync Frequency"></div>
-      <div class="knob-hotspot knob-right-hotspot" id="soundBtn" title="Click to Toggle Sound / Mute"></div>
+    <canvas id="staticNoise"></canvas>
+    <div class="scanlines-overlay" id="scanlines"></div>
+    <div class="glass-vignette"></div>
 
-      <div class="screen-glass-anchor" id="screenAnchor">
-        <canvas id="staticNoise"></canvas>
-        <div class="crt-scanline-grid" id="scanlines"></div>
-        <div class="crt-glass-glare"></div>
+    <div class="top-signal-hud">
+      SIGNAL: 82.4 MHz // CH 03<br>
+      <span style="font-size: 10px; opacity: 0.85;" id="statusMsg">TUNING SIGNAL...</span>
+    </div>
 
-        <div class="crt-hud-display" id="crtHud">
-          PALUDARIUM 01<br>
-          <span style="font-size: 10px; opacity: 0.8;" id="statusMsg">TUNING FREQUENCY...</span>
+    <div class="bottom-phosphor-bar">
+      
+      <div class="title-group">
+        <div class="main-title">
+          PALUDARIUM <span>// LIVE</span>
         </div>
+        <div class="sub-telemetry">
+          <div class="telemetry-item">STATUS: <span id="telemetryStatus">EPHEMERAL FEED</span></div>
+          <div class="telemetry-item">SOURCE: <span>HAND-HELD 1080p</span></div>
+          <div class="telemetry-item">AUDIO: <span id="audioStatus">MUTED</span></div>
+        </div>
+      </div>
 
-        <video 
-          id="paludariumVideo" 
-          class="crt-video-feed" 
-          playsinline 
-          loop 
-          muted 
-          preload="auto">
-          <source src="paludarium_stream.mp4" type="video/mp4">
-          Your browser does not support vintage CRT video playback.
-        </video>
-
+      <div class="interactive-badges">
+        <button class="hud-btn" id="audioBtn">TOGGLE AUDIO</button>
+        <button class="hud-btn" id="tuneBtn">RE-SYNC</button>
       </div>
 
     </div>
 
-  </div>
-
-  <div class="broadcast-info">
-    ● <span>LIVE TRANSMISSION:</span> Ephemeral live signal • Click screen or knobs to tune / un-mute audio.
   </div>
 
   <script>
@@ -245,24 +295,22 @@
     const video = document.getElementById('paludariumVideo');
     const statusMsg = document.getElementById('statusMsg');
     const scanlines = document.getElementById('scanlines');
+    const audioBtn = document.getElementById('audioBtn');
     const tuneBtn = document.getElementById('tuneBtn');
-    const soundBtn = document.getElementById('soundBtn');
-    const screenAnchor = document.getElementById('screenAnchor');
+    const audioStatus = document.getElementById('audioStatus');
+    const stage = document.getElementById('stage');
 
-    let isPowered = true;
     let isTuned = false;
 
     function resizeCanvas() {
-      canvas.width = screenAnchor.clientWidth / 2;
-      canvas.height = screenAnchor.clientHeight / 2;
+      canvas.width = window.innerWidth / 2;
+      canvas.height = window.innerHeight / 2;
     }
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
     function generateNoise() {
-      if (!isPowered) {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (isTuned && canvas.style.opacity === "0") {
         requestAnimationFrame(generateNoise);
         return;
       }
@@ -296,44 +344,44 @@
       video.classList.remove('active');
       isTuned = false;
 
-      // Phase 1: V-Hold sync lock
       setTimeout(() => {
         statusMsg.innerHTML = "PHASE LOCK... [V-HOLD]";
         canvas.style.opacity = "0.55";
       }, 1000);
 
-      // Phase 2: Acquired signal with analog flicker
       setTimeout(() => {
-        statusMsg.innerHTML = "ACQUIRED <span class='live-dot'></span>";
+        statusMsg.innerHTML = "ACQUIRED <span class='live-indicator'></span>";
         canvas.style.opacity = "0.0";
         video.classList.add('active');
-        video.play().catch(() => {
-          statusMsg.innerHTML += "<br><span style='font-size:9px; color:#ffdd44;'>CLICK FOR AUDIO</span>";
-        });
+        video.play().catch(() => {});
         isTuned = true;
 
-        // Phase 3: Transition scanlines and fade to crisp video
         setTimeout(() => {
           scanlines.classList.add('fade-out');
         }, 1200);
       }, 2300);
     }
 
-    tuneBtn.addEventListener('click', startTuning);
-    screenAnchor.addEventListener('click', () => {
+    function toggleAudio() {
       video.muted = !video.muted;
-      statusMsg.innerHTML = video.muted ? "AUDIO: MUTED" : "AUDIO: ON";
-      setTimeout(() => {
-        if (isTuned) statusMsg.innerHTML = "ACQUIRED <span class='live-dot'></span>";
-      }, 1500);
+      audioStatus.innerHTML = video.muted ? "MUTED" : "ACTIVE";
+      audioBtn.innerHTML = video.muted ? "UNMUTE" : "MUTE";
+    }
+
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAudio();
     });
 
-    soundBtn.addEventListener('click', () => {
-      video.muted = !video.muted;
-      statusMsg.innerHTML = video.muted ? "AUDIO: MUTED" : "AUDIO: ON";
-      setTimeout(() => {
-        if (isTuned) statusMsg.innerHTML = "ACQUIRED <span class='live-dot'></span>";
-      }, 1500);
+    stage.addEventListener('click', (e) => {
+      if (e.target !== tuneBtn && e.target !== audioBtn) {
+        toggleAudio();
+      }
+    });
+
+    tuneBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      startTuning();
     });
 
     window.addEventListener('DOMContentLoaded', () => {
