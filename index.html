@@ -140,45 +140,6 @@
       z-index: 5;
     }
 
-    /* =======================================================
-       MINIMAL TOP-LEFT TUCKED CHANNEL HUD (Clears Video View)
-       ======================================================= */
-    .crt-hud-display {
-      position: absolute;
-      top: 8px;
-      left: 12px;
-      z-index: 6;
-      font-size: 9px;
-      font-weight: bold;
-      color: var(--phosphor-green);
-      text-shadow: 0 0 4px var(--phosphor-glow);
-      letter-spacing: 1px;
-      pointer-events: none;
-      line-height: 1.2;
-      opacity: 0.85;
-      background: rgba(0, 0, 0, 0.35);
-      padding: 2px 6px;
-      border-radius: 2px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .live-dot {
-      display: inline-block;
-      width: 5px;
-      height: 5px;
-      background: #ff2a2a;
-      border-radius: 50%;
-      box-shadow: 0 0 5px #ff2a2a;
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
     /* Bottom Phosphor Green Titles */
     .bottom-screen-titlebar {
       position: absolute;
@@ -274,20 +235,17 @@
         class="monitor-bg-image"
       />
 
+      <!-- Interactive Knob Hit-Targets -->
       <div class="knob-hotspot knob-left-hotspot" id="tuneBtn" title="Click to Tune / Re-sync Frequency"></div>
       <div class="knob-hotspot knob-right-hotspot" id="soundBtn" title="Click to Toggle Sound / Mute"></div>
 
+      <!-- CRT Glass Tube -->
       <div class="screen-glass-anchor" id="screenAnchor">
         <canvas id="staticNoise"></canvas>
         <div class="crt-scanline-grid" id="scanlines"></div>
         <div class="crt-glass-glare"></div>
 
-        <!-- Neat, small, tucked status in top-left corner -->
-        <div class="crt-hud-display" id="crtHud">
-          <span>CH 03</span> • <span id="statusMsg">TUNING...</span>
-        </div>
-
-        <!-- Planted Phosphor Green Bottom Titles -->
+        <!-- Planted Phosphor Green Bottom Titles (Completely Clean Top) -->
         <div class="bottom-screen-titlebar">
           <div>
             <div class="title-main">PALUDARIUM</div>
@@ -322,7 +280,6 @@
     const canvas = document.getElementById('staticNoise');
     const ctx = canvas.getContext('2d');
     const video = document.getElementById('paludariumVideo');
-    const statusMsg = document.getElementById('statusMsg');
     const scanlines = document.getElementById('scanlines');
     const audioBadge = document.getElementById('audioBadge');
     const tuneBtn = document.getElementById('tuneBtn');
@@ -370,19 +327,16 @@
     requestAnimationFrame(generateNoise);
 
     function startTuning() {
-      statusMsg.innerHTML = "TUNING...";
       canvas.style.opacity = "0.95";
       scanlines.classList.remove('fade-out');
       video.classList.remove('active');
       isTuned = false;
 
       setTimeout(() => {
-        statusMsg.innerHTML = "LOCKING...";
         canvas.style.opacity = "0.55";
       }, 1000);
 
       setTimeout(() => {
-        statusMsg.innerHTML = "ACQUIRED <span class='live-dot'></span>";
         canvas.style.opacity = "0.0";
         video.classList.add('active');
         video.play().catch(() => {});
