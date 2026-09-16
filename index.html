@@ -74,17 +74,17 @@
       cursor: pointer;
     }
 
-    /* 100% Full Frame Video: 0% cropping, exactly fills the entire curved glass tube */
+    /* Full-bleed edge-to-edge video fill hitting all 4 CRT borders */
     .crt-video-feed {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: fill;
+      object-fit: cover;
       opacity: 0;
       transition: opacity 1.8s ease;
-      filter: contrast(1.05) saturate(1.1) brightness(1.0);
+      filter: contrast(1.06) saturate(1.12) brightness(1.0);
     }
     .crt-video-feed.active {
       opacity: 1;
