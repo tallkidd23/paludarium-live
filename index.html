@@ -78,7 +78,7 @@
       object-fit: cover;
       opacity: 0;
       transition: opacity 1.8s ease;
-      filter: contrast(1.18) saturate(1.22) brightness(0.92);
+      filter: contrast(1.05) saturate(1.1) brightness(1.0);
       transform: scale(1.03);
     }
     .crt-video-feed.active {
@@ -98,6 +98,7 @@
       transition: opacity 0.9s ease;
     }
 
+    /* Scanlines that flicker and smoothly fade out to a crisp picture */
     .crt-scanline-grid {
       position: absolute;
       top: 0;
@@ -114,7 +115,12 @@
       background-size: 100% 3px;
       pointer-events: none;
       z-index: 4;
-      opacity: 0.65;
+      opacity: 0.85;
+      transition: opacity 2.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .crt-scanline-grid.fade-out {
+      opacity: 0;
     }
 
     .crt-glass-glare {
@@ -124,9 +130,9 @@
       width: 100%;
       height: 100%;
       background: 
-        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.08) 25%, transparent 55%),
-        radial-gradient(circle at 82% 80%, rgba(180, 220, 200, 0.12) 0%, transparent 42%),
-        radial-gradient(circle at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.85) 100%);
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 25%, transparent 55%),
+        radial-gradient(circle at 82% 80%, rgba(180, 220, 200, 0.1) 0%, transparent 42%),
+        radial-gradient(circle at 50% 50%, transparent 65%, rgba(0, 0, 0, 0.8) 100%);
       pointer-events: none;
       z-index: 5;
     }
@@ -204,7 +210,7 @@
 
       <div class="screen-glass-anchor" id="screenAnchor">
         <canvas id="staticNoise"></canvas>
-        <div class="crt-scanline-grid"></div>
+        <div class="crt-scanline-grid" id="scanlines"></div>
         <div class="crt-glass-glare"></div>
 
         <div class="crt-hud-display" id="crtHud">
@@ -238,6 +244,7 @@
     const ctx = canvas.getContext('2d');
     const video = document.getElementById('paludariumVideo');
     const statusMsg = document.getElementById('statusMsg');
+    const scanlines = document.getElementById('scanlines');
     const tuneBtn = document.getElementById('tuneBtn');
     const soundBtn = document.getElementById('soundBtn');
     const screenAnchor = document.getElementById('screenAnchor');
@@ -285,22 +292,30 @@
     function startTuning() {
       statusMsg.innerHTML = "SEARCHING FREQ... 82.4 MHz";
       canvas.style.opacity = "0.95";
+      scanlines.classList.remove('fade-out');
       video.classList.remove('active');
       isTuned = false;
 
+      // Phase 1: V-Hold sync lock
       setTimeout(() => {
         statusMsg.innerHTML = "PHASE LOCK... [V-HOLD]";
         canvas.style.opacity = "0.55";
       }, 1000);
 
+      // Phase 2: Acquired signal with analog flicker
       setTimeout(() => {
         statusMsg.innerHTML = "ACQUIRED <span class='live-dot'></span>";
-        canvas.style.opacity = "0.06";
+        canvas.style.opacity = "0.0";
         video.classList.add('active');
         video.play().catch(() => {
           statusMsg.innerHTML += "<br><span style='font-size:9px; color:#ffdd44;'>CLICK FOR AUDIO</span>";
         });
         isTuned = true;
+
+        // Phase 3: Transition scanlines and fade to crisp video
+        setTimeout(() => {
+          scanlines.classList.add('fade-out');
+        }, 1200);
       }, 2300);
     }
 
