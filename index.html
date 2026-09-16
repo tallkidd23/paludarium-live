@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paludarium Signal // Live Feed</title>
+  <style>
+    :root {
+      --bg-dark: #07090b;
+      --wood-dark: #22150c;
+      --wood-mid: #422513;
+      --wood-light: #6a3e20;
+      --brass-gold: #c9a44c;
+      --crt-tint: rgba(30, 70, 60, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 40%, #151a1e 0%, #050708 80%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 2px, transparent 2px, transparent 60px);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', Courier, monospace;
+      color: #9ab49a;
+      overflow-x: hidden;
+      perspective: 1000px;
+      padding: 20px;
+    }
+
+    .room-scene {
+      position: relative;
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tv-cabinet {
+      position: relative;
+      width: 100%;
+      max-width: 840px;
+      background: linear-gradient(135deg, var(--wood-light) 0%, var(--wood-mid) 40%, var(--wood-dark) 100%);
+      border-radius: 24px;
+      padding: 36px 42px;
+      box-shadow: 
+        0 40px 80px rgba(0, 0, 0, 0.95),
+        inset 0 2px 6px rgba(255, 255, 255, 0.25),
+        inset 0 -6px 12px rgba(0, 0, 0, 0.8),
+        0 0 0 8px #140b06;
+      border: 3px solid #5a3418;
+      display: grid;
+      grid-template-columns: 1fr 140px;
+      gap: 28px;
+      align-items: center;
+      z-index: 5;
+    }
+
+    .cabinet-top {
+      position: absolute;
+      top: -65px;
+      left: 30px;
+      right: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .antenna-rig {
+      position: relative;
+      width: 120px;
+      height: 70px;
+    }
+    .antenna-base {
+      position: absolute;
+      bottom: 0;
+      left: 45px;
+      width: 30px;
+      height: 14px;
+      background: #111;
+      border-radius: 8px 8px 2px 2px;
+      border: 1px solid #444;
+    }
+    .antenna-rod {
+      position: absolute;
+      bottom: 10px;
+      width: 3px;
+      height: 80px;
+      background: linear-gradient(to right, #ddd, #888);
+      transform-origin: bottom center;
+    }
+    .antenna-left { left: 52px; transform: rotate(-38deg); }
+    .antenna-right { left: 65px; transform: rotate(34deg); }
+
+    .alf-prop {
+      position: relative;
+      width: 76px;
+      height: 74px;
+      background: #8b4a26;
+      border-radius: 40% 40% 30% 30% / 60% 60% 40% 40%;
+      box-shadow: inset 0 -6px 10px rgba(0,0,0,0.6), 4px 6px 15px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #542b14;
+    }
+    .alf-snout {
+      width: 26px;
+      height: 32px;
+      background: #ba6d3e;
+      border-radius: 12px;
+      margin-top: 8px;
+      border: 1px solid #472109;
+      position: relative;
+    }
+    .alf-snout::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 4px;
+      width: 18px;
+      height: 8px;
+      background: #2a1205;
+      border-radius: 4px;
+    }
+    .alf-eyes {
+      display: flex;
+      gap: 12px;
+      margin-top: -16px;
+    }
+    .alf-eye {
+      width: 6px;
+      height: 6px;
+      background: #000;
+      border-radius: 50%;
+    }
+    .alf-tag {
+      position: absolute;
+      bottom: -4px;
+      font-size: 8px;
+      font-weight: bold;
+      background: #ffd700;
+      color: #222;
+      padding: 1px 4px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+    }
+
+    .retro-cube {
+      width: 32px;
+      height: 32px;
+      background: #000;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      padding: 2px;
+      border-radius: 3px;
+      box-shadow: 2px 4px 10px rgba(0,0,0,0.8);
+      transform: rotate(-12deg);
+      margin-right: 40px;
+    }
+    .cube-tile { border-radius: 1px; }
+    .c-red { background: #d32f2f; }
+    .c-blue { background: #1976d2; }
+    .c-green { background: #388e3c; }
+    .c-yellow { background: #fbc02d; }
+    .c-white { background: #fafafa; }
+    .c-orange { background: #f57c00; }
+
+    .crt-bezel {
+      position: relative;
+      background: radial-gradient(circle at 40% 40%, #2f3336 0%, #17191b 80%, #0e1011 100%);
+      border-radius: 36px;
+      padding: 22px;
+      box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.9),
+        inset 0 4px 10px rgba(255, 255, 255, 0.1),
+        0 10px 25px rgba(0, 0, 0, 0.8),
+        0 0 0 6px #121314;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .crt-tube {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #050807;
+      border-radius: 28px / 22px;
+      overflow: hidden;
+      box-shadow: 
+        inset 0 0 40px rgba(0, 0, 0, 0.95),
+        inset 0 0 80px rgba(10, 40, 30, 0.6);
+      transform: perspective(700px) translateZ(0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stream-feed {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+      filter: contrast(1.1) saturate(1.2) brightness(0.95);
+    }
+    .stream-feed.active {
+      opacity: 1;
+    }
+
+    #staticCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0.9;
+      mix-blend-mode: screen;
+      transition: opacity 0.8s ease;
+    }
+
+    .crt-scanlines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.45) 51%,
+        rgba(0, 0, 0, 0.45)
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 4;
+      opacity: 0.75;
+    }
+
+    .crt-glass-reflection {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 60%),
+        radial-gradient(circle at 80% 85%, rgba(100, 255, 220, 0.08) 0%, transparent 40%),
+        linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 35%, rgba(0,0,0,0.6) 100%);
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.85);
+      pointer-events: none;
+      z-index: 5;
+      border-radius: 28px / 22px;
+    }
+
+    .crt-hud {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      z-index: 6;
+      font-size: 14px;
+      font-weight: bold;
+      color: #39ff14;
+      text-shadow: 0 0 6px #39ff14, 0 0 12px rgba(57, 255, 20, 0.8);
+      letter-spacing: 2px;
+      pointer-events: none;
+      line-height: 1.4;
+    }
+
+    .live-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      background: #ff2222;
+      color: #fff;
+      font-size: 11px;
+      border-radius: 3px;
+      margin-left: 8px;
+      text-shadow: none;
+      box-shadow: 0 0 8px #ff2222;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .control-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      padding: 10px 0;
+    }
+
+    .brand-badge {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--brass-gold);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--brass-gold);
+      padding-bottom: 2px;
+      text-align: center;
+    }
+
+    .rotary-knob-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin: 15px 0;
+    }
+
+    .knob-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .knob-label {
+      font-size: 9px;
+      color: #bfa382;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+
+    .knob {
+      width: 52px;
+      height: 52px;
+      background: radial-gradient(circle, #444 30%, #1a1a1a 80%);
+      border-radius: 50%;
+      border: 2px solid #555;
+      box-shadow: 
+        0 4px 8px rgba(0,0,0,0.8),
+        inset 0 2px 4px rgba(255,255,255,0.2);
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .knob::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 23px;
+      width: 4px;
+      height: 12px;
+      background: var(--brass-gold);
+      border-radius: 2px;
+    }
+
+    .power-switch {
+      width: 64px;
+      height: 30px;
+      background: #111;
+      border: 2px solid #552b14;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: #ff3333;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.7);
+    }
+    .power-switch.on {
+      color: #39ff14;
+      box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+    }
+
+    .speaker-grille {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 10px 4px;
+    }
+    .grille-slot {
+      height: 4px;
+      background: #150d08;
+      border-radius: 2px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.9), 0 1px 1px rgba(255,255,255,0.05);
+    }
+
+    .ephemeral-notice {
+      margin-top: 24px;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      color: #7b9487;
+      text-align: center;
+      max-width: 680px;
+      line-height: 1.6;
+      background: rgba(14, 24, 20, 0.6);
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid #1c3629;
+    }
+
+    @media (max-width: 768px) {
+      .tv-cabinet {
+        grid-template-columns: 1fr;
+        padding: 24px 18px;
+        gap: 20px;
+      }
+      .control-panel {
+        flex-direction: row;
+        width: 100%;
+      }
+      .rotary-knob-container {
+        flex-direction: row;
+      }
+      .speaker-grille {
+        display: none;
+      }
+      .cabinet-top {
+        top: -50px;
+        left: 10px;
+        right: 10px;
+      }
+      .antenna-rig {
+        transform: scale(0.8);
+      }
+      .alf-prop {
+        transform: scale(0.8);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="room-scene">
+    
+    <div class="cabinet-top">
+      <div class="antenna-rig">
+        <div class="antenna-rod antenna-left"></div>
+        <div class="antenna-rod antenna-right"></div>
+        <div class="antenna-base"></div>
+      </div>
+
+      <div class="retro-cube">
+        <div class="cube-tile c-red"></div>
+        <div class="cube-tile c-yellow"></div>
+        <div class="cube-tile c-blue"></div>
+        <div class="cube-tile c-white"></div>
+        <div class="cube-tile c-green"></div>
+        <div class="cube-tile c-orange"></div>
+        <div class="cube-tile c-yellow"></div>
+        <div class="cube-tile c-blue"></div>
+        <div class="cube-tile c-red"></div>
+      </div>
+
+      <div class="alf-prop" title="No Problem! - ALF">
+        <div class="alf-eyes">
+          <div class="alf-eye"></div>
+          <div class="alf-eye"></div>
+        </div>
+        <div class="alf-snout"></div>
+        <div class="alf-tag">ALF</div>
+      </div>
+    </div>
+
+    <div class="tv-cabinet">
+      
+      <div class="crt-bezel">
+        <div class="crt-tube">
+          <canvas id="staticCanvas"></canvas>
+          <div class="crt-scanlines"></div>
+          <div class="crt-glass-reflection"></div>
+
+          <div class="crt-hud" id="crtHud">
+            CH 03 - PALUDARIUM<br>
+            <span style="font-size: 11px; opacity: 0.8;" id="statusText">TUNING SIGNAL...</span>
+          </div>
+
+          <video 
+            id="paludariumVideo" 
+            class="stream-feed" 
+            playsinline 
+            loop 
+            muted
+            preload="auto">
+            <source src="paludarium_stream.mp4" type="video/mp4">
+            Your browser does not support vintage tube reception.
+          </video>
+        </div>
+      </div>
+
+      <div class="control-panel">
+        <div class="brand-badge">ELECTRO-VISION<br><span style="font-size:8px; font-weight:normal;">HI-FIDELITY</span></div>
+        
+        <div class="rotary-knob-container">
+          <div class="knob-wrap">
+            <div class="knob" id="tuneKnob" title="Tune Frequency"></div>
+            <span class="knob-label">V-HOLD / TUNE</span>
+          </div>
+          <div class="knob-wrap">
+            <div class="knob" id="volKnob" title="Audio Gain"></div>
+            <span class="knob-label">VOLUME</span>
+          </div>
+        </div>
+
+        <button class="power-switch on" id="powerBtn">POWER</button>
+
+        <div class="speaker-grille">
+          <div class="grille-slot"></div>
+          <div class="grille-slot"></div>
+          <div class="grille-slot"></div>
+          <div class="grille-slot"></div>
+          <div class="grille-slot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="ephemeral-notice">
+      ● <strong>LIVE FEED ONLY:</strong> This broadcast is streamed in real-time without archive or replay. Once the session ends, the signal is gone.
+    </div>
+
+  </div>
+
+  <script>
+    const canvas = document.getElementById('staticCanvas');
+    const ctx = canvas.getContext('2d');
+    const video = document.getElementById('paludariumVideo');
+    const statusText = document.getElementById('statusText');
+    const powerBtn = document.getElementById('powerBtn');
+    const tuneKnob = document.getElementById('tuneKnob');
+    const volKnob = document.getElementById('volKnob');
+
+    let isPowered = true;
+    let isTuned = false;
+    let knobAngle = 0;
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth / 2;
+      canvas.height = canvas.parentElement.clientHeight / 2;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function drawStatic() {
+      if (!isPowered) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        requestAnimationFrame(drawStatic);
+        return;
+      }
+
+      const imgData = ctx.createImageData(canvas.width, canvas.height);
+      const buffer = new Uint32Array(imgData.data.buffer);
+      const len = buffer.length;
+
+      for (let i = 0; i < len; i++) {
+        const gray = (Math.random() * 255) | 0;
+        buffer[i] = (255 << 24) | (gray << 16) | (gray << 8) | gray;
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      if (!isTuned) {
+        ctx.fillStyle = `rgba(255, 255, 255, ${Math.random() * 0.3})`;
+        const barHeight = Math.random() * 20 + 2;
+        const yPos = Math.random() * canvas.height;
+        ctx.fillRect(0, yPos, canvas.width, barHeight);
+      }
+
+      requestAnimationFrame(drawStatic);
+    }
+    requestAnimationFrame(drawStatic);
+
+    function initiateTuning() {
+      statusText.innerHTML = "SEARCHING FREQUENCY... 74.2 MHz";
+      canvas.style.opacity = "0.95";
+      video.classList.remove('active');
+      isTuned = false;
+
+      setTimeout(() => {
+        statusText.innerHTML = "LOCKING PHASE... [V-SYNC]";
+        canvas.style.opacity = "0.6";
+      }, 1200);
+
+      setTimeout(() => {
+        statusText.innerHTML = "SIGNAL ACQUIRED <span class='live-badge'>LIVE</span>";
+        canvas.style.opacity = "0.08";
+        video.classList.add('active');
+        video.play().catch(() => {
+          statusText.innerHTML += "<br><span style='font-size:10px; color:#ffdd44;'>CLICK TV FOR SOUND</span>";
+        });
+        isTuned = true;
+      }, 2600);
+    }
+
+    tuneKnob.addEventListener('click', () => {
+      knobAngle += 35;
+      tuneKnob.style.transform = `rotate(${knobAngle}deg)`;
+      initiateTuning();
+    });
+
+    volKnob.addEventListener('click', () => {
+      video.muted = !video.muted;
+      volKnob.style.transform = video.muted ? 'rotate(0deg)' : 'rotate(65deg)';
+    });
+
+    powerBtn.addEventListener('click', () => {
+      isPowered = !isPowered;
+      if (isPowered) {
+        powerBtn.classList.add('on');
+        initiateTuning();
+      } else {
+        powerBtn.classList.remove('on');
+        video.pause();
+        video.classList.remove('active');
+        statusText.innerHTML = "POWER OFF";
+        canvas.style.opacity = "1";
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(initiateTuning, 800);
+    });
+  </script>
+</body>
+</html>
