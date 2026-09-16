@@ -56,6 +56,7 @@
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
     }
 
+    /* Screen Bulb Inset */
     .screen-glass-anchor {
       position: absolute;
       top: 16.8%;
@@ -139,28 +140,37 @@
       z-index: 5;
     }
 
+    /* =======================================================
+       MINIMAL TOP-LEFT TUCKED CHANNEL HUD (Clears Video View)
+       ======================================================= */
     .crt-hud-display {
       position: absolute;
-      top: 14px;
-      left: 18px;
+      top: 8px;
+      left: 12px;
       z-index: 6;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: bold;
       color: var(--phosphor-green);
-      text-shadow: 0 0 6px var(--phosphor-glow), 0 0 12px rgba(57, 255, 20, 0.8);
-      letter-spacing: 1.5px;
+      text-shadow: 0 0 4px var(--phosphor-glow);
+      letter-spacing: 1px;
       pointer-events: none;
-      line-height: 1.4;
+      line-height: 1.2;
+      opacity: 0.85;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 2px 6px;
+      border-radius: 2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .live-dot {
       display: inline-block;
-      width: 6px;
-      height: 6px;
+      width: 5px;
+      height: 5px;
       background: #ff2a2a;
       border-radius: 50%;
-      margin-left: 4px;
-      box-shadow: 0 0 6px #ff2a2a;
+      box-shadow: 0 0 5px #ff2a2a;
       animation: pulse 1.5s infinite;
     }
 
@@ -169,13 +179,14 @@
       50% { opacity: 0.3; }
     }
 
+    /* Bottom Phosphor Green Titles */
     .bottom-screen-titlebar {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 14px 18px 12px 18px;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+      padding: 12px 16px 10px 16px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
       z-index: 6;
       display: flex;
       justify-content: space-between;
@@ -212,6 +223,7 @@
       text-shadow: 0 0 4px var(--phosphor-glow);
     }
 
+    /* Knob Hotspots */
     .knob-hotspot {
       position: absolute;
       bottom: 23%;
@@ -270,11 +282,12 @@
         <div class="crt-scanline-grid" id="scanlines"></div>
         <div class="crt-glass-glare"></div>
 
+        <!-- Neat, small, tucked status in top-left corner -->
         <div class="crt-hud-display" id="crtHud">
-          CH 03<br>
-          <span style="font-size: 9px; opacity: 0.85;" id="statusMsg">TUNING SIGNAL...</span>
+          <span>CH 03</span> • <span id="statusMsg">TUNING...</span>
         </div>
 
+        <!-- Planted Phosphor Green Bottom Titles -->
         <div class="bottom-screen-titlebar">
           <div>
             <div class="title-main">PALUDARIUM</div>
@@ -283,6 +296,7 @@
           <div class="audio-badge" id="audioBadge">MUTED</div>
         </div>
 
+        <!-- Video Player -->
         <video 
           id="paludariumVideo" 
           class="crt-video-feed" 
@@ -356,14 +370,14 @@
     requestAnimationFrame(generateNoise);
 
     function startTuning() {
-      statusMsg.innerHTML = "SEARCHING FREQ... 82.4 MHz";
+      statusMsg.innerHTML = "TUNING...";
       canvas.style.opacity = "0.95";
       scanlines.classList.remove('fade-out');
       video.classList.remove('active');
       isTuned = false;
 
       setTimeout(() => {
-        statusMsg.innerHTML = "PHASE LOCK... [V-HOLD]";
+        statusMsg.innerHTML = "LOCKING...";
         canvas.style.opacity = "0.55";
       }, 1000);
 
