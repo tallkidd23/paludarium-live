@@ -74,17 +74,17 @@
       cursor: pointer;
     }
 
+    /* 100% Full Frame Video: 0% cropping, exactly fills the entire curved glass tube */
     .crt-video-feed {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: fill;
       opacity: 0;
       transition: opacity 1.8s ease;
-      filter: contrast(1.06) saturate(1.12) brightness(1.0);
-      transform: scale(1.03);
+      filter: contrast(1.05) saturate(1.1) brightness(1.0);
     }
     .crt-video-feed.active {
       opacity: 1;
@@ -146,8 +146,8 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 12px 16px 10px 16px;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
+      padding: 10px 14px 8px 14px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.35) 60%, transparent 100%);
       z-index: 6;
       display: flex;
       justify-content: space-between;
@@ -156,7 +156,7 @@
     }
 
     .title-main {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 900;
       color: var(--phosphor-green);
       letter-spacing: 3px;
@@ -165,7 +165,7 @@
     }
 
     .title-sub {
-      font-size: 9px;
+      font-size: 8.5px;
       letter-spacing: 1.5px;
       color: #79bf77;
       text-shadow: 0 0 3px rgba(57, 255, 20, 0.4);
@@ -173,13 +173,13 @@
     }
 
     .audio-badge {
-      font-size: 9px;
+      font-size: 8.5px;
       font-weight: bold;
       letter-spacing: 1px;
       color: var(--phosphor-green);
       background: rgba(8, 26, 12, 0.6);
       border: 1px solid var(--phosphor-dim);
-      padding: 2px 6px;
+      padding: 2px 5px;
       border-radius: 3px;
       text-shadow: 0 0 4px var(--phosphor-glow);
     }
@@ -212,14 +212,14 @@
 
     @media (max-width: 600px) {
       .bottom-screen-titlebar {
-        padding: 8px 10px;
+        padding: 6px 8px;
       }
       .title-main {
-        font-size: 11px;
-        letter-spacing: 2px;
+        font-size: 10px;
+        letter-spacing: 1.5px;
       }
       .title-sub {
-        font-size: 8px;
+        font-size: 7.5px;
       }
     }
   </style>
@@ -235,17 +235,14 @@
         class="monitor-bg-image"
       />
 
-      <!-- Interactive Knob Hit-Targets -->
       <div class="knob-hotspot knob-left-hotspot" id="tuneBtn" title="Click to Tune / Re-sync Frequency"></div>
       <div class="knob-hotspot knob-right-hotspot" id="soundBtn" title="Click to Toggle Sound / Mute"></div>
 
-      <!-- CRT Glass Tube -->
       <div class="screen-glass-anchor" id="screenAnchor">
         <canvas id="staticNoise"></canvas>
         <div class="crt-scanline-grid" id="scanlines"></div>
         <div class="crt-glass-glare"></div>
 
-        <!-- Planted Phosphor Green Bottom Titles (Completely Clean Top) -->
         <div class="bottom-screen-titlebar">
           <div>
             <div class="title-main">PALUDARIUM</div>
@@ -254,7 +251,6 @@
           <div class="audio-badge" id="audioBadge">MUTED</div>
         </div>
 
-        <!-- Video Player -->
         <video 
           id="paludariumVideo" 
           class="crt-video-feed" 
